@@ -1,0 +1,10 @@
+packages
+NumPi/bin
+NumPi/obj
+
+
+NumPiTests/bin
+NumPiTests/obj
+
+
+.vs
