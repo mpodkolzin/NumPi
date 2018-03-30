@@ -29,6 +29,7 @@ namespace NumPi.Vectors
         Int64 Length { get; set; }
         object GetObject(long address);
 
+
         //Object Data { get; set; }
 
     }
@@ -41,6 +42,7 @@ namespace NumPi.Vectors
         T GetValue(Int64 address);
 
         IVector<NewT> Convert<NewT>(Func<T, NewT> typeConvertor);
+        IVector<NewT> Select<NewT>(Func<T, NewT> f);
 
     }
 }

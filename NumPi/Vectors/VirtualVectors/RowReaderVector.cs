@@ -54,6 +54,11 @@ namespace NumPi.Vectors.VirtualVectors
 
         }
 
+        public IVector<NewT> Select<NewT>(Func<T, NewT> f)
+        {
+            throw new NotImplementedException();
+        }
+
         public RowReaderVector(IVector<IVector> data, IVectorBuilder vectorBuilder, long rowAddress) 
         {
             //TODO add error handling

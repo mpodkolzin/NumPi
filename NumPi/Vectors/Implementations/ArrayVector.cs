@@ -18,7 +18,6 @@ namespace NumPi.Vectors.Implementations
 
         public IVectorData<T> Data
         {
-            //get => new ArrayVectorData<T>(_data.Data);
             get => _data;
             set { }
         }
@@ -37,6 +36,17 @@ namespace NumPi.Vectors.Implementations
         public object GetObject(long address)
         {
             return GetValue(address);
+        }
+
+        public IVector<NewT> Select<NewT>(Func<T, NewT> f)
+        {
+            var newData = new NewT[_data.Length];
+            for (long i = 0; i < _data.Length; i++)
+            {
+                newData[i] = f.Invoke(_data[i]);
+
+            }
+            return VectorBuilder.Instance.Create(newData);
         }
 
         public ArrayVector(ArrayVectorData<T> data)

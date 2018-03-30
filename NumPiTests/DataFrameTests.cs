@@ -85,7 +85,9 @@ namespace NumPiTests
                 });
 
 
-            dataFrame.TryGetRow<string>(1);
+            //dataFrame.TryGetRow<string>(1);
+            var rows2 = dataFrame.GetRows();
+            var cols2 = dataFrame.Columns;
             Assert.AreEqual(3, dataFrame.RowKeys.Count());
             Assert.AreEqual(3, dataFrame.ColumnKeys.Count());
 

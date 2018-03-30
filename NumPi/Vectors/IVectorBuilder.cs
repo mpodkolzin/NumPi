@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NumPi.Vectors.Construction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ namespace NumPi.Vectors
     {
         IVector<T> Create<T>(T[] from);
 
-        IVector<T> Build<T>();
+        IVector<T> Build<T>(IVectorConstruction vectorConstruction, IVector<T>[] vectors);
         Task<IVector<T>> AsyncBuild<T>();
 
     }

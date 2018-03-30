@@ -1,6 +1,7 @@
 ﻿using NumPi.Indices;
 using NumPi.Sequence;
 using NumPi.Vectors;
+using NumPi.Vectors.Extensions;
 using NumPi.Vectors.VirtualVectors;
 using System;
 using System.Collections.Generic;
@@ -82,6 +83,43 @@ namespace NumPi
 
 
         }
+        public RowSequence<TRowKey, TColumnKey> GetRows()
+        {
+            var vec = Vector.CreateRowVector<ObjectSequence<TColumnKey>>(_vectorBuilder, _rowIndex.KeyCount, _columnIndex.KeyCount, _data);
+            return new RowSequence<TRowKey, TColumnKey>(_rowIndex, vec, _vectorBuilder, _indexBuilder);
+        }
+
+        public ISequence<TRowKey> Columns
+        {
+            get {
+                var newData = _data.Select(vec => new ObjectSequence<TRowKey>(_rowIndex, Vector.BoxVector(vec, _vectorBuilder), _vectorBuilder, _indexBuilder));
+                return null;
+                //var newData = _data.
+            }
+            set { }
+        }
+
+        public ISequence<T> TryGetRow<T>(TRowKey rowKey)
+        {
+            var rowAddress = _rowIndex.Lookup(rowKey, LookupSemantics.Exact);
+            if(rowAddress == null)
+            {
+                throw new KeyNotFoundException();
+            }
+            var vector = new RowReaderVector<T>(_data, _vectorBuilder, rowAddress.Value);
+
+            var res = new Sequence<TColumnKey, T>(_columnIndex, vector, _vectorBuilder, _indexBuilder);
+
+            return null;
+        }
+
+
+
+
+        //===========================================WORK IN PROGRESS REGION=======================================================
+
+        #region WorkInProgress
+
 
         ////TEST
         private ColumnDefinition createColDefinition(IVector vector)
@@ -114,15 +152,19 @@ namespace NumPi
                 {
                     case TypeCode.String:
                         var vecStr = (IVector<string>)col.Values;
-                        writer.Invoke(Tuple.Create(vecStr.Data.Values.Select(v => (object)v), typeof(bool)));
+                        writer.Invoke(Tuple.Create(vecStr.Data.Values.Select(v => (object)v), typeof(string)));
                         break;
                     case TypeCode.Int32:
                         var vecInt32 = (IVector<int>)col.Values;
-                        writer.Invoke(Tuple.Create(vecInt32.Data.Values.Select(v => (object)v), typeof(bool)));
+                        writer.Invoke(Tuple.Create(vecInt32.Data.Values.Select(v => (object)v), typeof(int)));
                         break;
                     case TypeCode.Int64:
                         var vecInt64 = (IVector<long>)col.Values;
-                        writer.Invoke(Tuple.Create(vecInt64.Data.Values.Select(v => (object)v), typeof(bool)));
+                        writer.Invoke(Tuple.Create(vecInt64.Data.Values.Select(v => (object)v), typeof(long)));
+                        break;
+                    case TypeCode.Double:
+                        var vecDouble = (IVector<long>)col.Values;
+                        writer.Invoke(Tuple.Create(vecDouble.Data.Values.Select(v => (object)v), typeof(double)));
                         break;
                     case TypeCode.Boolean:
                         var vecDateTime = (IVector<DateTime>)col.Values;
@@ -155,19 +197,7 @@ namespace NumPi
             return dt;
             
         }
+        #endregion WorkInProgress
 
-        public ISequence<T> TryGetRow<T>(TRowKey rowKey)
-        {
-            var rowAddress = _rowIndex.Lookup(rowKey, LookupSemantics.Exact);
-            if(rowAddress == null)
-            {
-                throw new KeyNotFoundException();
-            }
-            var vector = new RowReaderVector<T>(_data, _vectorBuilder, rowAddress.Value);
-
-            var res = new Sequence<TColumnKey, T>(_columnIndex, vector, _vectorBuilder, _indexBuilder);
-
-            return null;
-        }
     }
 }

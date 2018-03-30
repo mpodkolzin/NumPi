@@ -10,14 +10,15 @@ namespace NumPi.Sequence
 {
     public class Sequence<KeyT, ValT> : ISequence<KeyT>
     {
-        public IVector Vector { get => _vector; set { } }
+        public IVector<ValT> Vector { get => _vector; set { } }
         public IIndex<KeyT> Index { get => _index; set { } }
         public IVectorBuilder VectorBuilder { get => _vectorBuilder; set { } }
         public IEnumerable<KeyT> Keys => _index.Keys;
         public IEnumerable<ValT> Values => _index.Mappings.Select(kv => _vector.GetValue(kv.Value));
 
-
         public IIndexBuilder IndexBuilder => _indexBuilder;
+
+        IVector ISequence<KeyT>.Vector { get => _vector; set { } }
 
         public object TryGetObject(KeyT key)
         {
@@ -27,6 +28,11 @@ namespace NumPi.Sequence
                 throw new KeyNotFoundException(key.ToString());
             }
             return _vector.GetValue(address.Value);
+        }
+
+        object ISequence<KeyT>.TryGetObject(KeyT key)
+        {
+            throw new NotImplementedException();
         }
 
         private IVectorBuilder _vectorBuilder;
