@@ -1,6 +1,8 @@
 ﻿using NumPi.Indices;
 using NumPi.Sequence;
+using NumPi.Sequence.Construction;
 using NumPi.Vectors;
+using NumPi.Vectors.Construction;
 using NumPi.Vectors.Extensions;
 using NumPi.Vectors.VirtualVectors;
 using System;
@@ -56,6 +58,11 @@ namespace NumPi
 
         public IEnumerable<TRowKey> RowKeys => _rowIndex.Keys;
         public IEnumerable<TColumnKey> ColumnKeys => _columnIndex.Keys;
+        public IEnumerable<Type> ColumnTypes => _columnIndex.Mappings.Select(kvp => _data.GetValue(kvp.Value).ElementType);
+        public bool IsEmpty  => !_rowIndex.Mappings.Any();
+
+        //public GetRowKeyAt(Int64 address) => 
+
         public DataFrame(IIndex<TRowKey> rowIndex, IIndex<TColumnKey> columnIndex, IVector<IVector> data, IIndexBuilder indexBuilder, IVectorBuilder vectorBuilder)
         {
             //TODO add error handling
@@ -80,21 +87,30 @@ namespace NumPi
             res.Columns = _data.Data.Values.Select(d => createColDefinition(d));
 
             return res;
-
-
         }
-        public RowSequence<TRowKey, TColumnKey> GetRows()
+
+
+
+        public RowSequence<TRowKey, TColumnKey> Rows
         {
-            var vec = Vector.CreateRowVector<ObjectSequence<TColumnKey>>(_vectorBuilder, _rowIndex.KeyCount, _columnIndex.KeyCount, _data);
-            return new RowSequence<TRowKey, TColumnKey>(_rowIndex, vec, _vectorBuilder, _indexBuilder);
+            get
+            {
+                Func<object, ObjectSequence<TColumnKey>> mapper = (vecReader) =>
+                {
+                    return new ObjectSequence<TColumnKey>(_columnIndex, (IVector<object>)vecReader, _vectorBuilder, _indexBuilder);
+                };
+                
+                var vec = Vector.CreateRowVector<ObjectSequence<TColumnKey>>(_vectorBuilder, _rowIndex.KeyCount, _columnIndex.KeyCount, mapper, _data);
+                return new RowSequence<TRowKey, TColumnKey>(_rowIndex, vec, _vectorBuilder, _indexBuilder);
+            }
         }
 
-        public ISequence<TRowKey> Columns
+        public ColumnSequence<TRowKey, TColumnKey> Columns
         {
             get {
                 var newData = _data.Select(vec => new ObjectSequence<TRowKey>(_rowIndex, Vector.BoxVector(vec, _vectorBuilder), _vectorBuilder, _indexBuilder));
-                return null;
-                //var newData = _data.
+                var colSeq = new ColumnSequence<TRowKey, TColumnKey>(new Sequence<TColumnKey, ObjectSequence<TRowKey>>(_columnIndex, newData, _vectorBuilder, _indexBuilder));
+                return colSeq;
             }
             set { }
         }
@@ -119,6 +135,23 @@ namespace NumPi
         //===========================================WORK IN PROGRESS REGION=======================================================
 
         #region WorkInProgress
+
+        public DataFrame<TRowKey, TColumnKey> GetAddressRange(IRangeBoundary<long> range)
+        {
+            var seqConstrCmd = _indexBuilder.GetAddressRange(new SequenceConstruction<TRowKey>(_rowIndex, new Return(0)), range);
+            var newData = _data.Select<IVector>(
+                vec =>
+                {
+                    //_vectorBuilder.Build(seqConstrCmd.VectorConstruction, new IVector[] { Vector.TransformColumn<IVector>(vec, _vectorBuilder) });
+                    //var newVec = Vector.unboxVector<IVector>
+                    var res = Vector.TransformColumn(vec, _vectorBuilder, seqConstrCmd.VectorConstruction);
+                    //var res =_vectorBuilder.Build<IVector>(seqConstrCmd.VectorConstruction, new IVector[] { vec });
+                    return res;
+                    
+                });
+            return new DataFrame<TRowKey, TColumnKey>(seqConstrCmd.Index, _columnIndex, newData, _indexBuilder, _vectorBuilder);
+
+        }
 
 
         ////TEST

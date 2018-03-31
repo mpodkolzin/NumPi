@@ -47,8 +47,10 @@
     <Compile Include="Indices\IIndex.cs" />
     <Compile Include="Indices\IIndexBuilder.cs" />
     <Compile Include="Indices\IndexExtensions.cs" />
+    <Compile Include="Indices\IRangeBoundary.cs" />
     <Compile Include="Indices\LinearIndex.cs" />
     <Compile Include="Indices\LinearIndexBuilder.cs" />
+    <Compile Include="Indices\LinearRangeIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReaderExtensions\CsvReader.cs" />
     <Compile Include="Reflection\FrameReflectionUtils.cs" />

@@ -1,4 +1,5 @@
-﻿using NumPi.Sequence;
+﻿using NumPi.Indices;
+using NumPi.Sequence;
 using NumPi.Vectors.Construction;
 using NumPi.Vectors.Extensions;
 using NumPi.Vectors.Implementations;
@@ -20,7 +21,7 @@ namespace NumPi.Vectors
             throw new NotImplementedException();
         }
 
-        public IVector<T> Build<T>(IVectorConstruction vectorConstruction, IVector<T>[] vectors)
+        public IVector<T> Build<T>(IVecConstructionCmd vectorConstruction, IVector<T>[] vectors)
         {
             if(vectorConstruction.GetType() == typeof(Return))
             {
@@ -28,10 +29,10 @@ namespace NumPi.Vectors
                 return vectors[vcReturn.VectorLocation];
 
             }
-            if(vectorConstruction.GetType() == typeof(Combine))
+            else if(vectorConstruction.GetType() == typeof(Combine))
             {
                 var combine = (Combine)vectorConstruction;
-                var data = combine.VectorConstruction.Select(vc => (IVector)VectorBuilderInstance.Build(vc, vectors)).ToArray();
+                var data = combine.VecConstructionCmds.Select(vc => (IVector)VectorBuilderInstance.Build(vc, vectors)).ToArray();
                 var frameData = VectorBuilderInstance.Create(data);
                 var rowReaders = new object[combine.Size];
                 for(long i = 0; i < combine.Size; i++)
@@ -40,7 +41,27 @@ namespace NumPi.Vectors
                 }
 
                 var objVec = new ArrayVector<object>(new ArrayVectorData<object>(rowReaders));
+                //var objectSeq = new ObjectSequence<T>(objVec);
                 return Vector.unboxVector<T>(objVec, VectorBuilderInstance);
+            }
+            else if(vectorConstruction.GetType() == typeof(GetRange))
+            {
+
+
+                var cmd = (GetRange)vectorConstruction;
+                //TODO
+                var range = (IntervalOf<Int64>)cmd.RangeBoundary;
+                var newVecData = this.buildArrayVector(cmd.VecConstructionCmd, vectors);
+                var newData = new T[(range.End - range.Start + 1)];
+
+                long idx = 0;
+                for(long i = range.Start; i <= range.End; i++)
+                {
+                    newData[idx] = newVecData[i];
+                    idx++;
+                }
+                return new ArrayVector<T>(new ArrayVectorData<T>(newData));
+
             }
             else
             {
@@ -58,5 +79,29 @@ namespace NumPi.Vectors
 
         //TODO moved to generic static class VectorBuilder
         //public static ArrayVectorBuilder Instance;
+
+        private  ArrayVectorData<T> buildArrayVector<T>(IVecConstructionCmd commands, IVector<T>[] vectors)
+        {
+            var res = Build(commands, vectors);
+            if(res.GetType() == typeof(ArrayVector<T>))
+            {
+                return (ArrayVectorData<T>)res.Data;
+
+            }
+            //TODO other cases
+            else
+            {
+
+            }
+            return null;
+        }
+
+
+        IVector Build(IVecConstructionCmd vectorConstruction, IVector[] vectors)
+        {
+            return null;
+
+        }
+
     }
 }

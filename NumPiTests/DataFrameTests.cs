@@ -32,10 +32,8 @@ namespace NumPiTests
             }
         };
 
-        [TestMethod]
-        public void TestMethod1()
+        public DataFrame<int, string> GetTestDataFrame()
         {
-            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             var cols = new List<string>() { "Name", "Value", "Timestamp" };
             var colIndex = Index.ofKeys<string>(cols);
             var rowidxArray = Enumerable.Range(0, testData.Count).ToArray();
@@ -75,6 +73,15 @@ namespace NumPiTests
             var colVectors = colList.Select(c => c.ToVector()).ToArray();
 
             var dataFrame = new DataFrame<int, string>(rowIndex, colIndex, Vector.ofValues(colVectors2.ToArray()), LinearIndexBuilder.Instance, VectorBuilder.Instance);
+            return dataFrame;
+
+        }
+
+        [TestMethod]
+        public void TestMethod1()
+        {
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            var dataFrame = GetTestDataFrame();
             var frameData = dataFrame.GetFrameData();
             dataFrame._tempwriteData(frameData.Columns.ToList(), 
                 (data) => {
@@ -86,7 +93,7 @@ namespace NumPiTests
 
 
             //dataFrame.TryGetRow<string>(1);
-            var rows2 = dataFrame.GetRows();
+            var rows2 = dataFrame.Rows;
             var cols2 = dataFrame.Columns;
             Assert.AreEqual(3, dataFrame.RowKeys.Count());
             Assert.AreEqual(3, dataFrame.ColumnKeys.Count());
@@ -104,6 +111,16 @@ namespace NumPiTests
             public string Name;
             public string Timestamp;
             public int Value;
+        }
+        [TestMethod]
+
+        public void CanGetRange()
+        {
+            var df = GetTestDataFrame();
+
+            var res = df.GetAddressRange(new IntervalOf<long>(1, 2, BoundaryBehavior.Inclusive));
+
+
         }
 
 

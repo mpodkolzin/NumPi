@@ -33,11 +33,10 @@ namespace NumPi.Indices
         Int64 KeyCount { get; set; }
         bool IsEmpty { get; set; }
         IIndexBuilder Builder { get; set; }
-
         /// Returns all key-address mappings in the index
         IEnumerable<KeyValuePair<T, Int64>> Mappings { get; set; }
         Int64? Lookup(T key, LookupSemantics semantics);
         KeyRange<T> KeyRange();
-
+        bool IsOrdered();
     }
 }

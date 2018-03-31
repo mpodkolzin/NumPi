@@ -11,11 +11,13 @@ namespace NumPi.Sequence.Construction
     public class SequenceConstruction<T>
     {
         public IIndex<T> Index;
-        public IVectorConstruction VectorConstruction;
+        public IVecConstructionCmd VectorConstruction;
 
-        public SequenceConstruction()
+        public SequenceConstruction(IIndex<T> index, IVecConstructionCmd vectorConstruction)
         {
-
+            //TODO add error handling
+            Index = index;
+            VectorConstruction = vectorConstruction;
         }
 
     }

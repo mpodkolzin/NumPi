@@ -9,7 +9,7 @@ namespace NumPi.Indices
     public class LinearIndex<T> : IIndex<T>
     {
         public IReadOnlyCollection<T> Keys { get => _keys; set { } }
-        public IEnumerable<T> KeySeq { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IEnumerable<T> KeySeq { get => _keys; set { } }
         public long KeyCount { get => (Int64)_keys.Count; set { } }
         public bool IsEmpty { get => !_keys.Any(); set { } }
         public IIndexBuilder Builder { get => _builder; set { } }
@@ -18,6 +18,7 @@ namespace NumPi.Indices
         {
             get
             {
+                //TODO probably makes sense to cache Mappings here
                 return _keys.Select((k, i) => new KeyValuePair<T, long>(k, i));
             }
             set { }
@@ -25,7 +26,7 @@ namespace NumPi.Indices
         public Int64? Lookup(T key, LookupSemantics semantics)
         {
             Int64 val;
-            if(lookupTable.TryGetValue(key, out val))
+            if(_lookupTable.TryGetValue(key, out val))
             {
                 return val;
             }
@@ -46,24 +47,26 @@ namespace NumPi.Indices
 
         private IIndexBuilder _builder;
 
-        private Dictionary<T, Int64> lookupTable;
+        private Dictionary<T, Int64> _lookupTable;
 
-        //public LinearIndex(IIndex<T> index, Int64 startAddress, Int64 endAddress)
-        //{
-        //}
 
         private void buildLookupTable()
         {
-            lookupTable = new Dictionary<T, long>();
+            _lookupTable = new Dictionary<T, long>();
             long idx = 0L;
             foreach(var key in _keys)
             {
-                if(!lookupTable.ContainsKey(key))
+                if(!_lookupTable.ContainsKey(key))
                 {
-                    lookupTable.Add(key, idx);
+                    _lookupTable.Add(key, idx);
                     idx = idx + 1L;
                 }
             }
+        }
+
+        bool IIndex<T>.IsOrdered()
+        {
+            return true;
         }
 
         public LinearIndex(IEnumerable<T> keys, IIndexBuilder builder, bool ordered)

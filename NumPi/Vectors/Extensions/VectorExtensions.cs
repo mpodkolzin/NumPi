@@ -1,4 +1,5 @@
-﻿using NumPi.Vectors.Construction;
+﻿using NumPi.Indices;
+using NumPi.Vectors.Construction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,28 @@ namespace NumPi.Vectors.Extensions
                     return null;
             }
         }
+        public static IVector TransformColumn(IVector vector, IVectorBuilder vectorBuilder, IVecConstructionCmd vectorConstr)
+        {
+            var boxedVector = BoxVector(vector, vectorBuilder);
+
+            var newVec = vectorBuilder.Build(vectorConstr, new IVector<object>[] { boxedVector });
+            return newVec;
+            //switch (Type.GetTypeCode(vector.ElementType))
+            //{
+            //    case TypeCode.String:
+            //        var strVec = (IVector<T>)vector;
+            //        var boxedVals = strVec.Data.Values.Select(v => (object)v).ToArray();
+            //        var boxedVec = vectorBuilder.Create<object>(boxedVals);
+            //        return strVec;
+            //    case TypeCode.Int32:
+            //        var intVec = (IVector<T>)vector;
+            //        var boxedValsInt = intVec.Data.Values.Select(v => (object)v).ToArray();
+            //        var boxedVecInt = vectorBuilder.Create<object>(boxedValsInt);
+            //        return intVec;
+            //    default:
+            //        return null;
+            //}
+        }
 
         //TODO unsafe
         public static IVector<T> unboxVector<T>(IVector<object> vector, IVectorBuilder vectorBuilder)
@@ -48,10 +71,11 @@ namespace NumPi.Vectors.Extensions
         }
 
 
-        public static IVector<T> CreateRowVector<T>(IVectorBuilder vectorBuilder, long rowKeyCount, long colKeyCount, IVector<IVector> data)
+        public static IVector<T> CreateRowVector<T>(IVectorBuilder vectorBuilder, long rowKeyCount, long colKeyCount, Func<object, T> mapper, IVector<IVector> data)
         {
             var boxedData = data.Select(v => BoxVector(v, vectorBuilder)).Data.Values.ToArray();
-            var vectorsConstr = new List<IVectorConstruction>();
+            var vectorsConstr = new List<IVecConstructionCmd>();
+
             for(long i = 0; i < colKeyCount; i++)
             {
                 vectorsConstr.Add(new Return(i));
@@ -59,15 +83,11 @@ namespace NumPi.Vectors.Extensions
 
             var cmd = new Combine(rowKeyCount, vectorsConstr);
 
+            var boxedVec = vectorBuilder.Build(cmd, boxedData);
+            var resVec = boxedVec.Select(v => mapper.Invoke(v));
 
-            var boxedVec = vectorBuilder.Build<object>(cmd, boxedData);
-            return Vector.unboxVector<T>(boxedVec, vectorBuilder);
+            return resVec;
 
         }
-
-        //public static IVector<NewT> Select<T,NewT>(this IVector<T> vector, Func<T, NewT> f)
-        //{
-
-        //}
     }
 }

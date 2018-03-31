@@ -16,7 +16,9 @@ namespace NumPi.Vectors.Implementations
 
         public T this[long index]
         {
+            //TODO add boundary checks
             get => _data[index];
+            set => _data[index] = value;
         }
 
         public ArrayVectorData(T[] data)

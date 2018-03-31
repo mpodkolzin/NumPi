@@ -11,7 +11,7 @@ namespace NumPi.Vectors
     {
         IVector<T> Create<T>(T[] from);
 
-        IVector<T> Build<T>(IVectorConstruction vectorConstruction, IVector<T>[] vectors);
+        IVector<T> Build<T>(IVecConstructionCmd vectorConstruction, IVector<T>[] vectors);
         Task<IVector<T>> AsyncBuild<T>();
 
     }
