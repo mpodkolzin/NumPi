@@ -1,5 +1,6 @@
 ﻿using NumPi.Vectors.Extensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace NumPi.Vectors.Helpers
         
     }
 
-    public class ListVector<T> : IElasticVector<T>
+    public class ListVector<T> : IElasticVector<T>, IEnumerable<T>
     {
         private const int DEFAULT_CAPACITY = 500;
 
@@ -31,9 +32,19 @@ namespace NumPi.Vectors.Helpers
             _data.Add(value);
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _data.GetEnumerator();
+        }
+
         public IVector ToVector()
         {
             return Vector.ofValues(_data.ToArray());
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }

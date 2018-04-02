@@ -25,6 +25,7 @@ namespace NumPi.Vectors.Extensions
         {
             switch (Type.GetTypeCode(vector.ElementType))
             {
+                //TODO implement conversions for all types
                 case TypeCode.String:
                     var strVec = (IVector<string>)vector;
                     var boxedVals = strVec.Data.Values.Select(v => (object)v).ToArray();
@@ -35,6 +36,11 @@ namespace NumPi.Vectors.Extensions
                     var boxedValsInt = intVec.Data.Values.Select(v => (object)v).ToArray();
                     var boxedVecInt = vectorBuilder.Create<object>(boxedValsInt);
                     return boxedVecInt;
+                case TypeCode.DateTime:
+                    var dtVec = (IVector<DateTime>)vector;
+                    var boxedValsDt = dtVec.Data.Values.Select(v => (object)v).ToArray();
+                    var boxedVecDt = vectorBuilder.Create<object>(boxedValsDt);
+                    return boxedVecDt;
                 default:
                     return null;
             }
@@ -42,24 +48,8 @@ namespace NumPi.Vectors.Extensions
         public static IVector TransformColumn(IVector vector, IVectorBuilder vectorBuilder, IVecConstructionCmd vectorConstr)
         {
             var boxedVector = BoxVector(vector, vectorBuilder);
-
             var newVec = vectorBuilder.Build(vectorConstr, new IVector<object>[] { boxedVector });
             return newVec;
-            //switch (Type.GetTypeCode(vector.ElementType))
-            //{
-            //    case TypeCode.String:
-            //        var strVec = (IVector<T>)vector;
-            //        var boxedVals = strVec.Data.Values.Select(v => (object)v).ToArray();
-            //        var boxedVec = vectorBuilder.Create<object>(boxedVals);
-            //        return strVec;
-            //    case TypeCode.Int32:
-            //        var intVec = (IVector<T>)vector;
-            //        var boxedValsInt = intVec.Data.Values.Select(v => (object)v).ToArray();
-            //        var boxedVecInt = vectorBuilder.Create<object>(boxedValsInt);
-            //        return intVec;
-            //    default:
-            //        return null;
-            //}
         }
 
         //TODO unsafe

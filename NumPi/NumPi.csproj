@@ -47,7 +47,6 @@
     <Compile Include="Indices\IIndex.cs" />
     <Compile Include="Indices\IIndexBuilder.cs" />
     <Compile Include="Indices\IndexExtensions.cs" />
-    <Compile Include="Indices\IRangeBoundary.cs" />
     <Compile Include="Indices\LinearIndex.cs" />
     <Compile Include="Indices\LinearIndexBuilder.cs" />
     <Compile Include="Indices\LinearRangeIndex.cs" />
@@ -55,7 +54,9 @@
     <Compile Include="ReaderExtensions\CsvReader.cs" />
     <Compile Include="Reflection\FrameReflectionUtils.cs" />
     <Compile Include="Sequence\ColumnSequence.cs" />
+    <Compile Include="Sequence\Construction\SequenceBuilder.cs" />
     <Compile Include="Sequence\Construction\SequenceConstruction.cs" />
+    <Compile Include="Sequence\Extensions\SequenceExtentions.cs" />
     <Compile Include="Sequence\ISequence.cs" />
     <Compile Include="Sequence\ObjectSequence.cs" />
     <Compile Include="Sequence\RowSequence.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Vectors\Construction\IVectorConstruction.cs" />
     <Compile Include="Vectors\Extensions\VectorExtensions.cs" />
     <Compile Include="Vectors\Helpers\ListVector.cs" />
+    <Compile Include="Vectors\Helpers\VectorUtils.cs" />
     <Compile Include="Vectors\Implementations\ArrayVector.cs" />
     <Compile Include="Vectors\Implementations\ArrayVectorBuilder.cs" />
     <Compile Include="Vectors\Implementations\ArrayVectorData.cs" />

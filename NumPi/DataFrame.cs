@@ -52,13 +52,16 @@ namespace NumPi
         private IIndexBuilder _indexBuilder;
 
 
-        public int RowCount;// => TODO
-        public int ColumnCount;// => TODO
+        public long RowCount => _rowIndex.KeyCount;
+        public long ColumnCount => _columnIndex.KeyCount;
 
 
         public IEnumerable<TRowKey> RowKeys => _rowIndex.Keys;
         public IEnumerable<TColumnKey> ColumnKeys => _columnIndex.Keys;
         public IEnumerable<Type> ColumnTypes => _columnIndex.Mappings.Select(kvp => _data.GetValue(kvp.Value).ElementType);
+
+        public IVector<IVector> Data => _data;
+
         public bool IsEmpty  => !_rowIndex.Mappings.Any();
 
         //public GetRowKeyAt(Int64 address) => 
@@ -73,6 +76,8 @@ namespace NumPi
             _indexBuilder = indexBuilder;
 
         }
+
+
         public DataFrame<TRowKey, TColumnKey> Merge(DataFrame<TRowKey, TColumnKey> otherFrame)
         {
             return null;
@@ -88,8 +93,6 @@ namespace NumPi
 
             return res;
         }
-
-
 
         public RowSequence<TRowKey, TColumnKey> Rows
         {
@@ -115,7 +118,7 @@ namespace NumPi
             set { }
         }
 
-        public ISequence<T> TryGetRow<T>(TRowKey rowKey)
+        public ISequence<TColumnKey> GetRow<T>(TRowKey rowKey)
         {
             var rowAddress = _rowIndex.Lookup(rowKey, LookupSemantics.Exact);
             if(rowAddress == null)
@@ -126,9 +129,8 @@ namespace NumPi
 
             var res = new Sequence<TColumnKey, T>(_columnIndex, vector, _vectorBuilder, _indexBuilder);
 
-            return null;
+            return (ISequence<TColumnKey>)res;
         }
-
 
 
 
@@ -199,12 +201,12 @@ namespace NumPi
                         var vecDouble = (IVector<long>)col.Values;
                         writer.Invoke(Tuple.Create(vecDouble.Data.Values.Select(v => (object)v), typeof(double)));
                         break;
-                    case TypeCode.Boolean:
+                    case TypeCode.DateTime:
                         var vecDateTime = (IVector<DateTime>)col.Values;
-                        writer.Invoke(Tuple.Create(vecDateTime.Data.Values.Select(v => (object)v), typeof(bool)));
+                        writer.Invoke(Tuple.Create(vecDateTime.Data.Values.Select(v => (object)v), typeof(DateTime)));
                         var res = vecDateTime.Data.Values;
                         break;
-                    case TypeCode.DateTime:
+                    case TypeCode.Boolean:
                         var vecBool = (IVector<bool>)col.Values;
                         break;
                 }

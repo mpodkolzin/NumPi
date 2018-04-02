@@ -16,8 +16,8 @@ namespace NumPi.Vectors.VirtualVectors
             get => new ArrayVectorData<T>(_dataArray);
             set { }
         }
-        public Type ElementType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public long Length { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Type ElementType { get => typeof(T); set { } }
+        public long Length { get => _dataArray.Length; set { } }
 
         public IVector<NewT> Convert<NewT>(Func<T, NewT> typeConvertor)
         {

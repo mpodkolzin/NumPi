@@ -31,7 +31,7 @@ namespace NumPi.Reflection
 
     public static class FrameReflectionUtils
     {
-        public static void ConvertRecordSequence<T>(IEnumerable<T> data)
+        public static DataFrame<int, string> ConvertRecordSequence<T>(IEnumerable<T> data)
         {
             var convertors = getRecordConvertorExprs(typeof(T));
             var colIndex = LinearIndexBuilder.Instance.Create<string>(convertors.Select(c => c.Name), true);
@@ -44,10 +44,9 @@ namespace NumPi.Reflection
             var vecs = convFuncs.Select(cf => cf.Invoke(data));
             var frameData = VectorBuilder.Instance.Create(vecs.ToArray());
 
-
             var rowKeys = Index.ofKeys<int>(Enumerable.Range(0, data.Count()));
-
             var frame = new DataFrame<int, string>(rowKeys, colIndex, frameData, LinearIndexBuilder.Instance, VectorBuilder.Instance);
+            return frame;
 
         }
 
@@ -62,9 +61,6 @@ namespace NumPi.Reflection
             var res = getMemberProjections(recordType).Select(mp =>
             {
                 var input = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(recordType));
-                //var md = recordType.GetMethods().First().GetGenericMethodDefinition().MakeGenericMethod();
-                //var md2 = mp.fieldType.GetMethods().First().GetGenericMethodDefinition().MakeGenericMethod();
-
                 var selected = Expression.Call(enumSelectMi.MakeGenericMethod(new Type[] { recordType, mp.fieldType }), input, mp.expr);
                 var body = Expression.Call(enumToArray.MakeGenericMethod(new Type[] { mp.fieldType }), selected);
                 var conv = Expression.Call(Expression.Constant(VectorBuilder.Instance), vcMethodInfo.MakeGenericMethod(new Type[] { mp.fieldType }), body);
@@ -73,7 +69,6 @@ namespace NumPi.Reflection
             });
 
             return res;
-            //var selected = Expression.Call()
 
         }
 

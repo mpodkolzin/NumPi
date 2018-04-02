@@ -9,6 +9,7 @@ using NumPi.Vectors.Extensions;
 using NumPi.Vectors;
 using NumPi.Reflection;
 using System.Diagnostics;
+using NumPi.Extensions.FrameExtensions;
 
 namespace NumPiTests
 {
@@ -16,63 +17,21 @@ namespace NumPiTests
     public class DataFrameTests
     {
 
-        public List<List<string>> testData = new List<List<string>>() {
-
-            new List<string>()
-            {
-                "Test1", "10", "Now1"
-            },
-            new List<string>()
-            {
-                "Test2", "20", "Now2"
-            },
-            new List<string>()
-            {
-                "Test3", "30", "Now3"
-            }
-        };
-
         public DataFrame<int, string> GetTestDataFrame()
         {
             var cols = new List<string>() { "Name", "Value", "Timestamp" };
             var colIndex = Index.ofKeys<string>(cols);
-            var rowidxArray = Enumerable.Range(0, testData.Count).ToArray();
+            var rowidxArray = Enumerable.Range(0, 3).ToArray();
             var rowIndex = Index.ofKeys<int>(rowidxArray);
-            var colList = cols.Select(c => new ListVector<string>()).ToArray();
+            var colList = cols.Select(c => new ListVector<object>()).ToArray();
 
-            var col1 = new ListVector<string>();
-            var col2 = new ListVector<int>();
-            var col3 = new ListVector<string>();
+            var col1 = new ListVector<string>() { "Test1", "Test2", "Test3" };
+            var col2 = new ListVector<int>() { 10, 20, 30 };
+            var col3 = new ListVector<DateTime>() { DateTime.Now, DateTime.Now, DateTime.Now };
 
-            col1.Add("Test1");
-            col1.Add("Test2");
-            col1.Add("Test3");
-            col2.Add(10);
-            col2.Add(20);
-            col2.Add(30);
-            col3.Add("Now1");
-            col3.Add("Now2");
-            col3.Add("Now3");
+            var colVectors = new List<IVector>() { col1.ToVector(), col2.ToVector(), col3.ToVector() };
+            var dataFrame = new DataFrame<int, string>(rowIndex, colIndex, Vector.ofValues(colVectors.ToArray()), LinearIndexBuilder.Instance, VectorBuilder.Instance);
 
-            var colVectors2 = new List<IVector>() { col1.ToVector(), col2.ToVector(), col3.ToVector() };
-
-            //var vec = colVectors2.First();
-            //var isgen = vec.GetType().IsGenericParameter;
-            //var  cgenAttrs = vec.GetType().ContainsGenericParameters;
-            //var  genAttrs = vec.GetType().GenericParameterAttributes;
-            //IVector<string> boxedVec = vec as IVector<string>;
-
-            foreach(var row in testData)
-            {
-                for (int i = 0; i < cols.Count; i++)
-                {
-                    var rowArr = row.ToArray();
-                    colList[i].Add(row[i]);
-                }
-            }
-            var colVectors = colList.Select(c => c.ToVector()).ToArray();
-
-            var dataFrame = new DataFrame<int, string>(rowIndex, colIndex, Vector.ofValues(colVectors2.ToArray()), LinearIndexBuilder.Instance, VectorBuilder.Instance);
             return dataFrame;
 
         }
@@ -92,13 +51,10 @@ namespace NumPiTests
                 });
 
 
-            //dataFrame.TryGetRow<string>(1);
             var rows2 = dataFrame.Rows;
             var cols2 = dataFrame.Columns;
             Assert.AreEqual(3, dataFrame.RowKeys.Count());
             Assert.AreEqual(3, dataFrame.ColumnKeys.Count());
-
-            
 
 
             var colKeys = dataFrame.ColumnKeys.ToList();
@@ -112,20 +68,45 @@ namespace NumPiTests
             public string Timestamp;
             public int Value;
         }
-        [TestMethod]
 
-        public void CanGetRange()
+        [TestMethod]
+        public void Can_Get_Range_from_DataFrame()
         {
             var df = GetTestDataFrame();
-
             var res = df.GetAddressRange(new IntervalOf<long>(1, 2, BoundaryBehavior.Inclusive));
+            Assert.AreEqual(2, res.RowCount);
+        }
 
+        [TestMethod]
+        public void Can_get_columns_from_data_frame()
+        {
+            var df = GetTestDataFrame();
+            var res = df.Columns;
+
+            Assert.IsNotNull(res);
+            Assert.AreEqual(3, res.Keys.Count());
+            Assert.AreEqual(3, res.Values.Count());
+            Assert.AreEqual(df.ColumnCount, res.Values.Count());
+            Assert.AreEqual(df.ColumnKeys.Count(), res.Keys.Count());
+        }
+
+        [TestMethod]
+        public void Can_get_rows_from_DataFrame()
+        {
+
+            var df = GetTestDataFrame();
+            var res = df.Rows;
+            Assert.IsNotNull(res);
+            Assert.AreEqual(df.RowCount, res.Values.Count());
+            Assert.AreEqual(df.RowKeys.Count(), res.Keys.Count());
+            Assert.AreEqual(3, res.Values.Count());
+            Assert.AreEqual(3, res.Keys.Count());
 
         }
 
 
         [TestMethod]
-        public void CanCreateDataFrameFromListOfRecords()
+        public void Can_Create_DataFrame_From_List_Of_Generic_objects()
         {
 
             List<Record> testRecords = new List<Record>()
@@ -136,8 +117,43 @@ namespace NumPiTests
             };
 
 
-            FrameReflectionUtils.ConvertRecordSequence<Record>(testRecords);
+            var res = FrameReflectionUtils.ConvertRecordSequence<Record>(testRecords);
 
+            Assert.AreEqual(3, res.ColumnKeys.Count());
+            Assert.AreEqual(testRecords.Count, res.RowCount);
+
+        }
+
+        [TestMethod]
+        public void Can_get_single_row()
+        {
+
+            int testRowIdx = 1;
+
+            var df = GetTestDataFrame();
+            var row = df.GetRow<object>(testRowIdx);
+            Assert.IsNotNull(row);
+            Assert.AreEqual(3, row.Vector.Length);
+
+            var val = row.GetObject("Name");
+            var val2 = row["Value"];
+
+        }
+
+        [TestMethod]
+        public void Can_request_frame_data()
+        {
+            var df = GetTestDataFrame();
+            var frameData = df.GetFrameData();
+
+        }
+
+        [TestMethod]
+        public void Can_convert_to_2d_Array()
+        {
+            //TODO
+            var df = GetTestDataFrame();
+            var res = FrameExtensions.ToArray2D<string, int, string>(df);
         }
     }
 }

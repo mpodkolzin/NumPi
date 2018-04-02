@@ -20,7 +20,17 @@ namespace NumPi.Sequence
 
         IVector ISequence<KeyT>.Vector { get => _vector; set { } }
 
-        public object TryGetObject(KeyT key)
+
+        public object this[KeyT key]
+        {
+            get
+            {
+                return GetObject(key);
+            }
+            set { }
+        }
+
+        public object GetObject(KeyT key)
         {
             var address = _index.Lookup(key, LookupSemantics.Exact);
             if(address == null)
@@ -30,17 +40,10 @@ namespace NumPi.Sequence
             return _vector.GetValue(address.Value);
         }
 
-        object ISequence<KeyT>.TryGetObject(KeyT key)
-        {
-            throw new NotImplementedException();
-        }
-
         private IVectorBuilder _vectorBuilder;
         private IIndexBuilder _indexBuilder;
         private IIndex<KeyT> _index;
         private IVector<ValT> _vector;
-
-
 
         public Sequence(IIndex<KeyT> index, IVector<ValT> vector, IVectorBuilder vectorBuilder, IIndexBuilder indexBuilder)
         {
@@ -49,6 +52,15 @@ namespace NumPi.Sequence
             _vector = vector;
             _vectorBuilder = vectorBuilder;
             _indexBuilder = indexBuilder;
+        }
+
+        public Sequence(IEnumerable<KeyT> keys, IEnumerable<ValT> values)
+        {
+            //TODO add error handling here
+            _vectorBuilder = Vectors.VectorBuilder.Instance;
+            _indexBuilder = LinearIndexBuilder.Instance;
+            _index = Index.ofKeys(keys);
+            _vector = _vectorBuilder.Create(values.ToArray());
         }
 
     }

@@ -37,10 +37,8 @@ namespace NumPi.Vectors
     {
         //TODO not sure we need VectorData container type here
         IVectorData<T> Data { get; set; }
-
         //TODO probably need to make it nullable
         T GetValue(Int64 address);
-
         IVector<NewT> Convert<NewT>(Func<T, NewT> typeConvertor);
         IVector<NewT> Select<NewT>(Func<T, NewT> f);
 

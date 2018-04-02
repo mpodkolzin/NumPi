@@ -13,7 +13,12 @@ namespace NumPi.Sequence
         IVector Vector { get; set; }
         IIndex<KeyT> Index { get; set; }
         IVectorBuilder VectorBuilder { get; set; }
-        object TryGetObject(KeyT key); 
+        object GetObject(KeyT key);
+        object this[KeyT index]
+        {
+            get;
+            set;
+        }
 
     }
 }
