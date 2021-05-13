@@ -1,5 +1,5 @@
 # NumPi
-Bare bones DataFrame library for .net havily inspired by Deedle
+Bare bones DataFrame library for .net heavily inspired by Deedle
 
 #### Basic usage:
 ##### Create DataFrame 
